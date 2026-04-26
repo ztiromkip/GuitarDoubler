@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
@@ -59,6 +61,23 @@ def merge_onsets(onset_times, merge_interval=0.075):
     return merged_onsets
 
 
+def cents_to_steps(cents):
+    # converts cents to semitones
+    return cents / 100.0
+
+
+def pitch_shift_segment(segment, sr, max_cents=5):
+    # Random pitch variation
+    cents = np.random.uniform(-max_cents, max_cents)
+    steps = cents_to_steps(cents)
+
+    # Apply pitch shift
+    shifted = librosa.effects.pitch_shift(segment, sr=sr, n_steps=steps)
+
+    return shifted
+
+
+#def run_guitar_doubler(file_path):
 # load audio
 file_path = "data/DI01_part.wav"
 y, sr = librosa.load(file_path, sr=None, mono=True)
@@ -72,51 +91,33 @@ onset_samples = (raw_merged_onsets * sr).astype(int)
 segments = []
 buffer = np.array([])
 processed = np.zeros_like(y)
-max_cents = 5                   # cents up/down variation
 weight = np.zeros_like(y)
 overlap = int(0.005 * sr)       # 5 ms OLA
 fade_len = int(0.005 * sr)      # 5 ms boundary smoothing
 
-def cents_to_steps(cents):
-    return cents / 100.0
-
 for i in range(len(onset_samples) - 1):
     start = max(0, onset_samples[i] - overlap)
     end = min(len(y), onset_samples[i + 1] + overlap)
-
     segment = y[start:end]
-
-    # Random pitch variation (uniform distribution)
-    cents = np.random.uniform(-max_cents, max_cents)
-    steps = cents_to_steps(cents)
-
-    # Apply pitch shift
-    shifted = librosa.effects.pitch_shift(segment, sr=sr, n_steps=steps)
-    # shifted = segment   # for testing without shifts
-
-    # Match length
-    if len(shifted) > (end - start):
-        shifted = shifted[:(end - start)]
-    else:
-        shifted = np.pad(shifted, (0, (end - start) - len(shifted)))
-
-    # --- Crossfade ---
     seg_len = end - start
+
+    # pitch shift segment
+    shifted = pitch_shift_segment(segment, sr)
+
+    # Crossfade
     window = np.ones(seg_len)
+    ramp = np.linspace(0, 1, fade_len)
+    window[:fade_len] = ramp
+    window[-fade_len:] = ramp[::-1]
 
-    if seg_len > 2 * fade_len:
-        ramp = np.linspace(0, 1, fade_len)
-
-        window[:fade_len] = ramp
-        window[-fade_len:] = ramp[::-1]
-
+    # match length
     shifted = shifted[:seg_len]
     if len(shifted) < seg_len:
         shifted = np.pad(shifted, (0, seg_len - len(shifted)))
 
     shifted *= window
 
-    # --- Overlap add ---
+    # Overlap add
     processed[start:end] += shifted
     weight[start:end] += window
 
