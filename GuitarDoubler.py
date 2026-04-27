@@ -157,6 +157,31 @@ def apply_timing_jitter(
     return segment, seg_len, write_start, write_end, offset
 
 
+def apply_pitch_drift(segment, sr, max_drift_cents, drift_rate_hz):
+    n = len(segment)
+    t = np.arange(n) / sr
+
+    # create smooth low-frequency modulation signal
+    # random phase so segments don't align
+    phase = np.random.uniform(0, 2 * np.pi)
+    drift = np.sin(2 * np.pi * drift_rate_hz * t + phase)
+
+    # scale to cents
+    drift_cents = drift * max_drift_cents
+
+    # convert cents to playback rate
+    rate = 2 ** (drift_cents / 1200.0)
+
+    # integrate rate to get new time mapping
+    time_map = np.cumsum(rate)
+    time_map = time_map / time_map[-1] * (n - 1)
+
+    # resample using interpolation
+    drifted = np.interp(time_map, np.arange(n), segment)
+
+    return drifted
+
+
 def run_guitar_doubler(input_path, output_path):
     # load audio
     y, sr = librosa.load(input_path, sr=None, mono=True)
@@ -168,7 +193,6 @@ def run_guitar_doubler(input_path, output_path):
 
     # Process segments
     processed = np.zeros_like(y)
-    weight = np.zeros_like(y)
     overlap = int(parameters["overlap_time"] * sr)  # 10 ms OLA
     fade_len = int(parameters["fade_time"] * sr)  # 5 ms boundary smoothing
     prev_offset = 0
@@ -200,23 +224,30 @@ def run_guitar_doubler(input_path, output_path):
         if len(shifted) < seg_len:
             shifted = np.pad(shifted, (0, seg_len - len(shifted)))
 
-        shifted *= window
+        # apply pitch drift - TODO: bin noch unsicher obs das besser oder schlechter macht
+        drifted = apply_pitch_drift(shifted, sr, parameters["max_drift_cents"], parameters["drift_rate_hz"])
+
+        # apply volume variation - TODO: als eigene Funktion
+        gained = drifted * random.uniform(0.9, 1.1)
+
+        # window
+        gained *= window
 
         # Overlap add
-        processed[write_start:write_end] += shifted
-        weight[write_start:write_end] += window
+        processed[write_start:write_end] += gained
 
-    # normalizing crossfades
-    processed /= np.maximum(weight, 1e-8)
+    print("Applied timing jitters to segments.")
+    print("Applied pitch shift to segments.")
+    print("Applied pitch drift to segments.")
 
-    # Save result
+    # Save result - TODO: irgendwie is des zu leise
     sf.write(output_path, processed, sr)
 
-    print("Saved pitch-varied track.")
+    print("Saved doubled track.")
 
 
 if __name__ == "__main__":
-    # check if file path is given as an argument
+    # check if file paths are given as an argument
     if len(sys.argv) < 3:
         raise SystemExit(
             "Missing arguments. Call script with [1] path to input track and [2] path to output track."
