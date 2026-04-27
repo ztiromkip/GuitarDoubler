@@ -1,0 +1,9 @@
+{
+  "onset_sensitivity": 0.15,
+  "merge_interval_time": 0.075,
+  "max_shift_cents": 7,
+  "overlap_time": 0.01,
+  "fade_time": 0.005,
+  "min_shift_time": 0.003,
+  "max_shift_time": 0.03
+}

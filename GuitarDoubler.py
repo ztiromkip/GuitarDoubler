@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys
+import random
+import json
 
 import librosa.display
 import numpy as np
@@ -7,7 +9,7 @@ import matplotlib.pyplot as plt
 import soundfile as sf
 
 
-def onset_detection(y, sr: int, onset_sensitivity=0.15, plot=False):
+def onset_detection(y, sr, onset_sensitivity, plot=False):
     # Compute onset strength envelope
     onset_env = librosa.onset.onset_strength(
         y=y, sr=sr, hop_length=512, aggregate=np.median
@@ -52,12 +54,12 @@ def onset_detection(y, sr: int, onset_sensitivity=0.15, plot=False):
     return onset_times
 
 
-def merge_onsets(onset_times, merge_interval=0.075):
+def merge_onsets(onset_times, merge_interval_time):
     # Merge onsets close to each other
     merged_onsets = [onset_times[0]]
 
     for t in onset_times[1:]:
-        if t - merged_onsets[-1] >= merge_interval:
+        if t - merged_onsets[-1] >= merge_interval_time:
             merged_onsets.append(t)
 
     merged_onsets = np.array(merged_onsets)
@@ -72,7 +74,7 @@ def cents_to_steps(cents):
     return cents / 100.0
 
 
-def pitch_shift_segment(segment, sr: int, max_cents=5):
+def pitch_shift_segment(segment, sr, max_cents=7):
     # Random pitch variation
     cents = np.random.uniform(-max_cents, max_cents)
     steps = cents_to_steps(cents)
@@ -83,27 +85,99 @@ def pitch_shift_segment(segment, sr: int, max_cents=5):
     return shifted
 
 
-def run_guitar_doubler(input_path: str, output_path: str):
+def generate_offset(overlap, min_shift, max_shift, prev_offset=0):
+    # min_shift < ∣offset∣ < max_shift
+    # prev_offset − overlap < offset < prev_offset + overlap
+    intervals = []
+
+    base_lo = prev_offset - overlap
+    base_hi = prev_offset + overlap
+
+    # Positive interval: (min_shift, max_shift)
+    lo = max(base_lo, min_shift)
+    hi = min(base_hi, max_shift)
+    if lo < hi:
+        lo_i = int(lo) + 1
+        hi_i = int(hi) - 1
+        if lo_i <= hi_i:
+            intervals.append((lo_i, hi_i))
+
+    # Negative interval: (-max_shift, -min_shift)
+    lo = max(base_lo, -max_shift)
+    hi = min(base_hi, -min_shift)
+    if lo < hi:
+        lo_i = int(lo) + 1
+        hi_i = int(hi) - 1
+        if lo_i <= hi_i:
+            intervals.append((lo_i, hi_i))
+
+    if not intervals:
+        raise ValueError("No valid offset satisfies the constraints.")
+
+    # Uniform sampling across intervals without building full list
+    sizes = [hi - lo + 1 for lo, hi in intervals]
+    total = sum(sizes)
+    r = random.randint(1, total)
+
+    for (lo, hi), size in zip(intervals, sizes):
+        if r <= size:
+            return lo + (r - 1)
+        r -= size
+
+
+def apply_timing_jitter(
+    y, sr, onset_samples, i, overlap, min_shift_time, max_shift_time, prev_offset=0
+):
+    # read position: unchanged
+    read_start = max(0, onset_samples[i] - overlap)
+    read_end = min(len(y), onset_samples[i + 1] + overlap)
+    segment = y[read_start:read_end]
+    seg_len = read_end - read_start
+
+    # convert to samples
+    min_shift = int(min_shift_time * sr)
+    max_shift = int(max_shift_time * sr)
+
+    # write position: jittered
+    offset = generate_offset(overlap, min_shift, max_shift, prev_offset)
+    write_start = read_start + offset
+    write_end = write_start + seg_len
+
+    # clamp to valid range
+    if write_start < 0:
+        segment = segment[-write_start:]
+        write_start = 0
+
+    if write_end > len(y):
+        segment = segment[: len(y) - write_start]
+        write_end = len(y)
+
+    seg_len = len(segment)
+
+    return segment, seg_len, write_start, write_end, offset
+
+
+def run_guitar_doubler(input_path, output_path):
     # load audio
     y, sr = librosa.load(input_path, sr=None, mono=True)
 
     # detect onsets
-    raw_onset_times = onset_detection(y, sr)
-    raw_merged_onsets = merge_onsets(raw_onset_times)
+    raw_onset_times = onset_detection(y, sr, parameters["onset_sensitivity"])
+    raw_merged_onsets = merge_onsets(raw_onset_times, parameters["merge_interval_time"])
     onset_samples = (raw_merged_onsets * sr).astype(int)
 
     # Process segments
     processed = np.zeros_like(y)
     weight = np.zeros_like(y)
-    overlap = int(0.005 * sr)  # 5 ms OLA
-    fade_len = int(0.005 * sr)  # 5 ms boundary smoothing
+    overlap = int(parameters["overlap_time"] * sr)  # 10 ms OLA
+    fade_len = int(parameters["fade_time"] * sr)  # 5 ms boundary smoothing
+    prev_offset = 0
 
     for i in range(len(onset_samples) - 1):
-        # prepare OLA
-        start = max(0, onset_samples[i] - overlap)
-        end = min(len(y), onset_samples[i + 1] + overlap)
-        segment = y[start:end]
-        seg_len = end - start
+        # apply timing jitter
+        segment, seg_len, write_start, write_end, prev_offset = apply_timing_jitter(
+            y, sr, onset_samples, i, overlap, parameters["min_shift_time"], parameters["max_shift_time"], prev_offset=prev_offset
+        )
 
         # pitch shift segment
         shifted = pitch_shift_segment(segment, sr)
@@ -122,8 +196,8 @@ def run_guitar_doubler(input_path: str, output_path: str):
         shifted *= window
 
         # Overlap add
-        processed[start:end] += shifted
-        weight[start:end] += window
+        processed[write_start:write_end] += shifted
+        weight[write_start:write_end] += window
 
     # normalizing crossfades
     processed /= np.maximum(weight, 1e-8)
@@ -140,6 +214,12 @@ if __name__ == "__main__":
         raise SystemExit(
             "Missing arguments. Call script with [1] path to input track and [2] path to output track."
         )
+
+    try:
+        with open("parameters.json", "r") as f:
+            parameters = json.load(f)
+    except FileNotFoundError:
+        raise SystemExit("Parameters file not found. Make sure parameters.json exists.")
 
     # fetch file path
     input_path = sys.argv[1]
