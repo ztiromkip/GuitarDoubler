@@ -176,7 +176,14 @@ def run_guitar_doubler(input_path, output_path):
     for i in range(len(onset_samples) - 1):
         # apply timing jitter
         segment, seg_len, write_start, write_end, prev_offset = apply_timing_jitter(
-            y, sr, onset_samples, i, overlap, parameters["min_shift_time"], parameters["max_shift_time"], prev_offset=prev_offset
+            y,
+            sr,
+            onset_samples,
+            i,
+            overlap,
+            parameters["min_shift_time"],
+            parameters["max_shift_time"],
+            prev_offset=prev_offset,
         )
 
         # pitch shift segment
