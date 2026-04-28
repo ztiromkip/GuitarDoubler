@@ -7,5 +7,6 @@
   "overlap_time": 0.020,
   "fade_time": 0.005,
   "min_shift_time": 0.004,
-  "max_shift_time": 0.04
+  "max_shift_time": 0.04,
+  "gain_range": 0.1
 }

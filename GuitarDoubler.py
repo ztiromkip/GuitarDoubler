@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import soundfile as sf
 
+from tqdm import tqdm
+
 
 def onset_detection(y, sr, onset_sensitivity, plot=False):
     # Compute onset strength envelope
@@ -182,6 +184,10 @@ def apply_pitch_drift(segment, sr, max_drift_cents, drift_rate_hz):
     return drifted
 
 
+def apply_gain(segment, gain_range):
+    return segment * random.uniform(1 - gain_range, 1 + gain_range)
+
+
 def run_guitar_doubler(input_path, output_path):
     # load audio
     y, sr = librosa.load(input_path, sr=None, mono=True)
@@ -197,7 +203,9 @@ def run_guitar_doubler(input_path, output_path):
     fade_len = int(parameters["fade_time"] * sr)  # 5 ms boundary smoothing
     prev_offset = 0
 
-    for i in range(len(onset_samples) - 1):
+    for i in tqdm(
+        range(len(onset_samples) - 1), desc="Applying processing to segments."
+    ):
         # apply timing jitter
         segment, seg_len, write_start, write_end, prev_offset = apply_timing_jitter(
             y,
@@ -224,11 +232,13 @@ def run_guitar_doubler(input_path, output_path):
         if len(shifted) < seg_len:
             shifted = np.pad(shifted, (0, seg_len - len(shifted)))
 
-        # apply pitch drift - TODO: bin noch unsicher obs das besser oder schlechter macht
-        drifted = apply_pitch_drift(shifted, sr, parameters["max_drift_cents"], parameters["drift_rate_hz"])
+        # apply pitch drift
+        drifted = apply_pitch_drift(
+            shifted, sr, parameters["max_drift_cents"], parameters["drift_rate_hz"]
+        )
 
-        # apply volume variation - TODO: als eigene Funktion
-        gained = drifted * random.uniform(0.9, 1.1)
+        # apply volume variation
+        gained = apply_gain(drifted, parameters["gain_range"])
 
         # window
         gained *= window
@@ -236,11 +246,7 @@ def run_guitar_doubler(input_path, output_path):
         # Overlap add
         processed[write_start:write_end] += gained
 
-    print("Applied timing jitters to segments.")
-    print("Applied pitch shift to segments.")
-    print("Applied pitch drift to segments.")
-
-    # Save result - TODO: irgendwie is des zu leise
+    # Save result
     sf.write(output_path, processed, sr)
 
     print("Saved doubled track.")
