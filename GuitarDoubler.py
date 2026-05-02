@@ -188,6 +188,30 @@ def apply_gain(segment, gain_range):
     return segment * random.uniform(1 - gain_range, 1 + gain_range)
 
 
+def allpass_filter_fc(x, sr, fc):
+    # convert frequency to coefficient
+    k = np.tan(np.pi * fc / sr)
+    a = (k - 1) / (k + 1)
+
+    y = np.zeros_like(x)
+    z = 0.0
+
+    # apply allpass
+    for n in range(len(x)):
+        y[n] = -a * x[n] + z
+        z = x[n] + a * y[n]
+
+    return y
+
+
+def allpass_cascade(signal, sr, fc_allpass):
+    # cascade allpass for all center frequencies
+    for fc in tqdm(fc_allpass, desc="Applying allpass filtering"):
+        signal = allpass_filter_fc(signal, sr, fc)
+
+    return signal
+
+
 def run_guitar_doubler(input_path, output_path):
     # load audio
     y, sr = librosa.load(input_path, sr=None, mono=True)
@@ -204,7 +228,7 @@ def run_guitar_doubler(input_path, output_path):
     prev_offset = 0
 
     for i in tqdm(
-        range(len(onset_samples) - 1), desc="Applying processing to segments."
+        range(len(onset_samples) - 1), desc="Applying processing to segments"
     ):
         # apply timing jitter
         segment, seg_len, write_start, write_end, prev_offset = apply_timing_jitter(
@@ -246,8 +270,11 @@ def run_guitar_doubler(input_path, output_path):
         # Overlap add
         processed[write_start:write_end] += gained
 
+    # allpass
+    filtered = allpass_cascade(processed, sr, parameters["fc_allpass"])
+
     # Save result
-    sf.write(output_path, processed, sr)
+    sf.write(output_path, filtered, sr)
 
     print("Saved doubled track.")
 

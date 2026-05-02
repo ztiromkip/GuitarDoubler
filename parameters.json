@@ -8,5 +8,6 @@
   "fade_time": 0.005,
   "min_shift_time": 0.004,
   "max_shift_time": 0.04,
-  "gain_range": 0.1
+  "gain_range": 0.1,
+  "fc_allpass": [100, 750, 1000]
 }
