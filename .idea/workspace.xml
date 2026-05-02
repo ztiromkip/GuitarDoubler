@@ -6,6 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="823840f7-967c-480b-933d-e66732a03600" name="Changes" comment="formatting">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GuitarDoubler.py" beforeDir="false" afterPath="$PROJECT_DIR$/GuitarDoubler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parameters.json" beforeDir="false" afterPath="$PROJECT_DIR$/parameters.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +148,8 @@
       <workItem from="1777297992965" duration="2925000" />
       <workItem from="1777320917647" duration="5362000" />
       <workItem from="1777379223792" duration="1901000" />
-      <workItem from="1777745082950" duration="3008000" />
+      <workItem from="1777745082950" duration="3495000" />
+      <workItem from="1777749342146" duration="461000" />
     </task>
     <task id="LOCAL-00001" summary="basic setup with onset detection and pitch shifting per segment">
       <option name="closed" value="true" />
@@ -251,7 +255,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777747673657</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="formatting">
+      <option name="closed" value="true" />
+      <created>1777748612091</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1777748612091</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

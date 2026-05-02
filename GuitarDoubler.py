@@ -217,7 +217,7 @@ def run_guitar_doubler(input_path, output_path):
     y, sr = librosa.load(input_path, sr=None, mono=True)
 
     # detect onsets
-    raw_onset_times = onset_detection(y, sr, parameters["onset_sensitivity"])
+    raw_onset_times = onset_detection(y, sr, parameters["onset_sensitivity"], plot=parameters["plot_onsets"])
     raw_merged_onsets = merge_onsets(raw_onset_times, parameters["merge_interval_time"])
     onset_samples = (raw_merged_onsets * sr).astype(int)
 

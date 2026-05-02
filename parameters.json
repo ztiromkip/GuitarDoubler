@@ -1,5 +1,6 @@
 {
   "onset_sensitivity": 0.15,
+  "plot_onsets": false,
   "merge_interval_time": 0.075,
   "max_shift_cents": 5,
   "max_drift_cents": 2,

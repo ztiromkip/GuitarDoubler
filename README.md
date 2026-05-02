@@ -21,6 +21,7 @@ when played together with the original signal.
 The soft parameters that can be adapted individually are:
 
 - ``onset_sensitivity``:
+- ``plot_onsets``:
 - ``merge_interval_time``: 
 - ``max_shift_cents``: Adjusts, by how many cents every frame is shifted individually in frequency (maximum).
 - ``max_drift_cents``: Adjusts, by how many cents every frame drifts in frequency over time at a given rate.
@@ -30,4 +31,4 @@ The soft parameters that can be adapted individually are:
 - ``min_shift_time``: Adjusts, how many ms each frame is at least shifted away from its orignial position.
 - ``max_shift_time``: Adjusts, how many ms each frame is maximally shifted away from its orignial position.
 - ``gain_range``: Adjusts, how much the volume of each frame can be altered.
-- ``fc_allpass``: Adjusts the center frequencies of the applied allpass cascade (given as a list).
+- ``fc_allpass``: Adjusts the center frequencies of the applied allpass cascade (list of frequencies in Hz).
