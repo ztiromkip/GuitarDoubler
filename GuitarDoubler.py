@@ -223,8 +223,8 @@ def run_guitar_doubler(input_path, output_path):
 
     # Process segments
     processed = np.zeros_like(y)
-    overlap = int(parameters["overlap_time"] * sr)  # 10 ms OLA
-    fade_len = int(parameters["fade_time"] * sr)  # 5 ms boundary smoothing
+    overlap = int(parameters["overlap_time"] * sr)  # overlap_time ms OLA
+    fade_len = int(parameters["fade_time"] * sr)  # fade_time ms boundary smoothing
     prev_offset = 0
 
     for i in tqdm(

@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="823840f7-967c-480b-933d-e66732a03600" name="Changes" comment="resolved TODOs">
+    <list default="true" id="823840f7-967c-480b-933d-e66732a03600" name="Changes" comment="added allpass filtering">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GuitarDoubler.py" beforeDir="false" afterPath="$PROJECT_DIR$/GuitarDoubler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parameters.json" beforeDir="false" afterPath="$PROJECT_DIR$/parameters.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +147,7 @@
       <workItem from="1777297992965" duration="2925000" />
       <workItem from="1777320917647" duration="5362000" />
       <workItem from="1777379223792" duration="1901000" />
-      <workItem from="1777745082950" duration="733000" />
+      <workItem from="1777745082950" duration="2522000" />
     </task>
     <task id="LOCAL-00001" summary="basic setup with onset detection and pitch shifting per segment">
       <option name="closed" value="true" />
@@ -229,7 +229,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777381693348</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="added allpass filtering">
+      <option name="closed" value="true" />
+      <created>1777745882995</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1777745882995</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -246,7 +254,8 @@
     <MESSAGE value="added parameters for pitch drift" />
     <MESSAGE value="added pitch drifting and volume control, TODOs" />
     <MESSAGE value="resolved TODOs" />
-    <option name="LAST_COMMIT_MESSAGE" value="resolved TODOs" />
+    <MESSAGE value="added allpass filtering" />
+    <option name="LAST_COMMIT_MESSAGE" value="added allpass filtering" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Guitar_Doubler$main.coverage" NAME="main Coverage Results" MODIFIED="1777239613321" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
