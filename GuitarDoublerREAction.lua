@@ -1,11 +1,10 @@
--- USER CONFIG ----------------------------
+-- paths
 local info = debug.getinfo(1, "S")
 local script_path = info.source:match("@(.*[\\/])")
 
 PYTHON_PATH = script_path .. ".venv\\Scripts\\python.exe"
 SCRIPT_PATH = script_path .. "GuitarDoubler.py"
 PARAMS_PATH = script_path .. "parameters.json"
-------------------------------------------
 
 -- load dkjson
 local json = dofile(reaper.GetResourcePath() .. "/Scripts/dkjson.lua")
