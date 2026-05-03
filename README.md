@@ -32,3 +32,5 @@ The soft parameters that can be adapted individually are:
 - ``max_shift_time``: Adjusts, how many ms each frame is maximally shifted away from its orignial position.
 - ``gain_range``: Adjusts, how much the volume of each frame can be altered.
 - ``fc_allpass``: Adjusts the center frequencies of the applied allpass cascade (list of frequencies in Hz).
+
+For Reaper .lua usage: https://dkolf.de/dkjson-lua/ 
