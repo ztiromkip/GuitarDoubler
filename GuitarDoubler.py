@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import sys
 import random
 import json
@@ -286,8 +287,11 @@ if __name__ == "__main__":
             "Missing arguments. Call script with [1] path to input track and [2] path to output track."
         )
 
+    script_directory = os.path.dirname(os.path.abspath(__file__))
+    parameters_path = os.path.join(script_directory, "parameters.json")
+
     try:
-        with open("parameters.json", "r") as f:
+        with open(parameters_path, "r") as f:
             parameters = json.load(f)
     except FileNotFoundError:
         raise SystemExit("Parameters file not found. Make sure parameters.json exists.")
