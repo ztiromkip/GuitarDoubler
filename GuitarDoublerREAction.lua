@@ -91,7 +91,23 @@ params.max_shift_time = tonumber(vals[9])
 params.gain_range = tonumber(vals[10])
 
 -- write updated JSON
-write_file(PARAMS_PATH, json.encode(params, { indent = true }))
+write_file(PARAMS_PATH, json.encode(params, {
+  indent = true,
+  keyorder = {
+      "onset_sensitivity",
+      "plot_onsets",
+      "merge_interval_time",
+      "max_shift_cents",
+      "max_drift_cents",
+      "drift_rate_hz",
+      "overlap_time",
+      "fade_time",
+      "min_shift_time",
+      "max_shift_time",
+      "gain_range",
+      "fc_allpass"
+  }
+}))
 
 local item = reaper.GetSelectedMediaItem(0, 0)
 if not item then
